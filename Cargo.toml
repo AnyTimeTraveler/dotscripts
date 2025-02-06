@@ -1,0 +1,54 @@
+[package]
+name = "bin"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "change_default_sink"
+path = "change_default_sink.rs"
+required-features = []
+
+[[bin]]
+name = "change_default_source"
+path = "change_default_source.rs"
+required-features = ["colored"]
+
+[[bin]]
+name = "day_countdown"
+path = "day_countdown.rs"
+required-features = ["chrono"]
+
+[[bin]]
+name = "power_profiles"
+path = "power_profiles.rs"
+required-features = []
+
+[[bin]]
+name = "vpn"
+path = "vpn.rs"
+required-features = []
+
+[[bin]]
+name = "nixos_rebuild"
+path = "nixos_rebuild.rs"
+required-features = ["colored"]
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+strip = true
+
+[dependencies.tokio]
+version = "1.43.0"
+features = ["rt", "macros", "io-util", "io-std", "fs", "sync", "time", "process", "rt-multi-thread"]
+
+[dependencies.chrono]
+version = "0.4.39"
+default-features = false
+features = ["clock", "std"]
+optional = true
+
+[dependencies.colored]
+version = "3.0.0"
+default-features = false
+optional = true
