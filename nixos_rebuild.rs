@@ -1,4 +1,4 @@
-use crate::helpers::{run, run_with_exit_status, run_with_live_output};
+use crate::helpers::{run, run_with_exit_status, run_with_inherited_stdio, run_with_live_output};
 use colored::Colorize;
 use std::env::set_current_dir;
 use std::error::Error;
@@ -118,10 +118,9 @@ async fn show_new_generation() -> Result<String, Box<dyn Error>> {
 }
 
 async fn optimize_nix_store() -> Result<(), Box<dyn Error>> {
-    run_with_live_output(
+    run_with_inherited_stdio(
         "sudo",
         ["nix-store", "--optimise", "--log-format", "bar", "--cores", "0"],
-        |line| Some(line),
     )
     .await?;
     Ok(())

@@ -108,6 +108,21 @@ where
     Ok((status, buffer))
 }
 
+
+pub async fn run_with_inherited_stdio<I, S>(cmd: &str, args: I) -> Result<ExitStatus, Box<dyn Error>>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let mut child = Command::new(cmd)
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()?;
+    Ok(child.wait().await?)
+}
+
 async fn capture_output(
     buffer: &mut String,
     process_output: Output,
