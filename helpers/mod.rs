@@ -2,6 +2,7 @@
 use std::error::Error;
 use std::ffi::OsStr;
 use std::fmt::Display;
+use std::io::{stdout, Write};
 use std::process::{ExitStatus, Output, Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, Command};
@@ -93,6 +94,7 @@ where
             buffer.push('\n');
             if let Some(line) = output_filter(format!("{}\n", line)) {
                 print!("{}", line);
+                stdout().flush()?;
             }
         }
         if child.try_wait()?.is_some() {

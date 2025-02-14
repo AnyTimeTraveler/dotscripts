@@ -115,14 +115,22 @@ outputs = json.loads(completed_process.stdout.decode("utf-8"))
 
 # Define your monitors
 # Each monitor must be defined by at least 1 parameter, but more is better to avoid collisions
+print("Detected Monitors:")
 laptop_builtin = find_monitor(name_regex="eDP-1")
-desk_center = find_monitor(model_regex="27GL650F", serial_regex="004NTDV0L450", make_regex="LG Electronics")
-desk_left = find_monitor(model_regex="LEN LT2452pwC", serial_regex="VN-123198", make_regex="Lenovo Group Limited")
-desk_right = find_monitor(model_regex="S242HL", serial_regex="LR90D0218577", make_regex="Acer Technologies")
+print(f"laptop_builtin: {laptop_builtin is not None}")
+desk_center = find_monitor(model_regex="27GL650F", make_regex="LG Electronics")
+print(f"desk_center: {desk_center is not None}")
+desk_left = find_monitor(model_regex="LEN LT2452pwC", make_regex="Lenovo Group Limited")
+print(f"desk_left: {desk_left is not None}")
+desk_right = find_monitor(model_regex="S242HL", make_regex="Acer Technologies")
+print(f"desk_right: {desk_right is not None}")
 
 dlr_left = find_monitor(make_regex="Dell Inc.", name_regex="DP-9")
+print(f"dlr_left: {dlr_left is not None}")
 dlr_right = find_monitor(make_regex="Dell Inc.", name_regex="DP-7")
+print(f"dlr_right: {dlr_right is not None}")
 
+print("Choosing to use the following setup:")
 # Define your setups based on which monitors were found
 if laptop_builtin and desk_left and desk_center and desk_right:
     print("Home desk setup")
@@ -179,6 +187,28 @@ output "{dlr_right['name']}" {{
 }}
 output "{dlr_left['name']}" {{
     mode  2560x1440@59.951Hz
+    pos 0 0
+    transform normal
+    scale 1.0
+    scale_filter nearest
+    adaptive_sync off
+    dpms on
+}}
+""")
+elif laptop_builtin and desk_center:
+    print("Laptop with screen above setup")
+    use_setup(
+            f"""output "{laptop_builtin['name']}" {{
+    mode  1920x1200@60.001Hz
+    pos 0 1080
+    transform normal
+    scale 1.0
+    scale_filter nearest
+    adaptive_sync off
+    dpms on
+}}
+output "{desk_center['name']}" {{
+    mode  1920x1080@144.001Hz
     pos 0 0
     transform normal
     scale 1.0

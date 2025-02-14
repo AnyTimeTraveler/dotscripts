@@ -33,6 +33,11 @@ name = "nixos_rebuild"
 path = "nixos_rebuild.rs"
 required-features = ["colored"]
 
+[[bin]]
+name = "regex_copier"
+path = "regex_copier.rs"
+required-features = ["clap", "regex", "colored"]
+
 [profile.release]
 codegen-units = 1
 lto = "fat"
@@ -52,3 +57,12 @@ optional = true
 version = "3.0.0"
 default-features = false
 optional = true
+
+[dependencies.regex]
+version = "1.11.1"
+optional = true
+
+[dependencies.clap]
+version = "4.5.29"
+optional = true
+features = ["derive"]

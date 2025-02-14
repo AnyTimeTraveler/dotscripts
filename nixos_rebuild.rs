@@ -8,14 +8,32 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 mod helpers;
+use clap::Parser;
 
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Args {
+    #[arg(long, default_value = "subl")]
+    editor: String,
+    #[arg(long, default_value = "--wait .")]
+    editor_args: String,
+    #[arg(long, default_value = "/etc/nixos")]
+    nix_dir: String,
+    #[arg(short, long, action)]
+    optimize_store: bool,
+    #[arg(long, action)]
+    dry_run: bool,
+    #[arg(long, action)]
+    debug: bool,
+}
 const NIX_REBUILD_ERROR_CONTEXT: i32 = 1;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
-    set_current_dir("/etc/nixos")?;
+    let Args { editor, editor_args, nix_dir, optimize_store, dry_run, debug } = Args::parse();
+    set_current_dir(nix_dir)?;
 
-    run("subl", ["--wait", "."]).await?;
+    run(&editor, editor_args.split(" ")).await?;
     println!("{}", "Waiting for sublime text to close...".green());
 
     wait_for_sublime_exit().await;
@@ -29,12 +47,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     println!("{}", "NixOS Upgrade!".green());
     println!("{}", " 1. Rebuilding...".green());
-    rebuild_nixos().await?;
+    rebuild_nixos(dry_run, debug).await?;
     print!("{}", " 2. Collecting garbage...".green());
-    collect_garbage().await?;
-    // println!("{}", " 3. Optimizing nix-store...".green());
-    // optimize_nix_store().await?;
-
+    collect_garbage(dry_run, debug).await?;
+    if optimize_store {
+        println!("{}", " 3. Optimizing nix-store...".green());
+        if dry_run {
+            println!("{}", "   Not running, has no dry-run option".red())
+        } else {
+            optimize_nix_store().await?;
+        }
+    }
     let current_generation = show_new_generation().await?;
 
     if there_are_changes {
@@ -94,7 +117,6 @@ async fn show_new_generation() -> Result<String, Box<dyn Error>> {
     Ok(current_generation)
 }
 
-#[allow(dead_code)]
 async fn optimize_nix_store() -> Result<(), Box<dyn Error>> {
     run_with_live_output(
         "sudo",
@@ -105,18 +127,22 @@ async fn optimize_nix_store() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn collect_garbage() -> Result<(), Box<dyn Error>> {
-    let (status, output) = run_with_live_output(
-        "sudo",
-        ["nix-collect-garbage", "--delete-older-than", "30d"], //
-        |line| {
-            if line.starts_with("deleting '") || line.starts_with("removing stale link ") {
-                Some(".".into())
+async fn collect_garbage(dry_run: bool, debug: bool) -> Result<(), Box<dyn Error>> {
+    let mut args = vec!["nix-collect-garbage", "--delete-older-than", "30d"];
+    if dry_run {
+        args.push("--dry-run");
+    }
+    let (status, output) = run_with_live_output("sudo", args, |line| {
+        if line.starts_with("deleting '") || line.starts_with("removing stale link ") {
+            if debug {
+                Some(format!("\n{}", line.trim_end().cyan()))
             } else {
-                Some(format!("\n{}", line.trim_end().purple()))
+                Some(".".into())
             }
-        },
-    )
+        } else {
+            Some(format!("\n{}", line.trim_end().purple()))
+        }
+    })
     .await?;
     println!();
     if status.success() {
@@ -128,7 +154,7 @@ async fn collect_garbage() -> Result<(), Box<dyn Error>> {
     }
 }
 
-async fn rebuild_nixos() -> Result<(), Box<dyn Error>> {
+async fn rebuild_nixos(dry_run: bool, debug: bool) -> Result<(), Box<dyn Error>> {
     let log = OpenOptions::new() //
         .create(true) //
         .truncate(true) //
@@ -137,7 +163,11 @@ async fn rebuild_nixos() -> Result<(), Box<dyn Error>> {
     let mut log = LineWriter::new(log);
     let (status, output) = run_with_live_output(
         "sudo",
-        ["nixos-rebuild", "switch", "--upgrade-all", "--show-trace"],
+        if dry_run {
+            ["nixos-rebuild", "dry-build", "--upgrade-all", "--show-trace"]
+        } else {
+            ["nixos-rebuild", "switch", "--upgrade-all", "--show-trace"]
+        },
         |line| {
             (&mut log).write(line.as_bytes()).unwrap();
             if line.contains("error:") {
@@ -149,7 +179,11 @@ async fn rebuild_nixos() -> Result<(), Box<dyn Error>> {
             {
                 Some(format!("\n{}", line.trim_end().purple()))
             } else {
-                Some(".".into())
+                if debug {
+                    Some(format!("\n{}", line.trim_end().cyan()))
+                } else {
+                    Some(".".into())
+                }
             }
         },
     )
@@ -198,7 +232,7 @@ async fn check_for_git_changes() -> Result<bool, Box<dyn Error>> {
         stdin().read_line(&mut user_input)?;
         let user_input = user_input.trim();
         if !user_input.is_empty() || user_input.to_lowercase() == "n" {
-            return Err("Failed to check for git changes!".to_owned().into());
+            return Err("User aborted program.".to_owned().into());
         }
     }
     Ok(there_are_changes)
