@@ -24,21 +24,24 @@ struct Args {
     #[arg(long, action)]
     dry_run: bool,
     #[arg(long, action)]
+    boot: bool,
+    #[arg(long, action)]
     debug: bool,
 }
 const NIX_REBUILD_ERROR_CONTEXT: i32 = 1;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let Args { editor, editor_args, nix_dir, optimize_store, dry_run, debug } = Args::parse();
+    let Args { editor, editor_args, nix_dir, optimize_store, dry_run,boot, debug } = Args::parse();
     set_current_dir(nix_dir)?;
 
     run(&editor, editor_args.split(" ")).await?;
     println!("{}", "Waiting for sublime text to close...".green());
 
-    wait_for_sublime_exit().await;
+    wait_for_editor_exit().await;
 
     format_nix_config().await?;
+
     run("git", ["add", "-A"]).await?;
 
     let there_are_changes = check_for_git_changes().await?;
@@ -47,7 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     println!("{}", "NixOS Upgrade!".green());
     println!("{}", " 1. Rebuilding...".green());
-    rebuild_nixos(dry_run, debug).await?;
+    rebuild_nixos(dry_run, debug, boot).await?;
     print!("{}", " 2. Collecting garbage...".green());
     collect_garbage(dry_run, debug).await?;
     if optimize_store {
@@ -153,7 +156,7 @@ async fn collect_garbage(dry_run: bool, debug: bool) -> Result<(), Box<dyn Error
     }
 }
 
-async fn rebuild_nixos(dry_run: bool, debug: bool) -> Result<(), Box<dyn Error>> {
+async fn rebuild_nixos(dry_run: bool, debug: bool, on_boot: bool) -> Result<(), Box<dyn Error>> {
     let log = OpenOptions::new() //
         .create(true) //
         .truncate(true) //
@@ -164,7 +167,9 @@ async fn rebuild_nixos(dry_run: bool, debug: bool) -> Result<(), Box<dyn Error>>
         "sudo",
         if dry_run {
             ["nixos-rebuild", "dry-build", "--upgrade-all", "--show-trace"]
-        } else {
+        } else if on_boot {
+            ["nixos-rebuild", "boot", "--upgrade-all", "--show-trace"]
+        }else{
             ["nixos-rebuild", "switch", "--upgrade-all", "--show-trace"]
         },
         |line| {
@@ -254,7 +259,7 @@ async fn format_nix_config() -> Result<(), Box<dyn Error>> {
     }
 }
 
-async fn wait_for_sublime_exit() {
+async fn wait_for_editor_exit() {
     while let Ok(process_list) = run("pgrep", ["sublime"]).await {
         if process_list.trim().is_empty() {
             break;

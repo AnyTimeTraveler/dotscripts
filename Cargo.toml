@@ -38,6 +38,11 @@ name = "regex_copier"
 path = "regex_copier.rs"
 required-features = ["clap", "regex", "colored"]
 
+#[[bin]]
+#name = "multi_monitor"
+#path = "multi_monitor.rs"
+#required-features = ["clap", "serde_json", "regex", "colored"]
+
 [profile.release]
 codegen-units = 1
 lto = "fat"
@@ -66,3 +71,7 @@ optional = true
 version = "4.5.29"
 optional = true
 features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0.138"
+optional = true
