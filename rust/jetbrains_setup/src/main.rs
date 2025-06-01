@@ -63,6 +63,7 @@ async fn replace_config(content: &mut String, start: usize) -> Result<(), ErrorM
     let new_config = create_config().await?;
     trace!("With:\n{}", new_config);
     content.replace_range(range, &new_config);
+    info!("Done!");
     Ok(())
 }
 
@@ -70,8 +71,8 @@ async fn create_config() -> Result<String, ErrorMessage> {
     let rust_root = run("rustc", &["--print", "sysroot"])
         .await
         .with_err_context("Executing 'rustc --print sysroot' failed")?;
-    info!("Found rust at path: {}", &rust_root);
     let rust_root = rust_root.trim();
+    info!("Found rust at path: {}", &rust_root);
     let rust_bin = format!("{rust_root}/bin");
     let rust_lib = format!("{rust_root}/lib/rustlib/src/rust/library");
     debug!("Rust bin: {}", rust_bin);
