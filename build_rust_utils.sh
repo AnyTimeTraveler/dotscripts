@@ -1,3 +1,8 @@
 #!/usr/bin/env sh
 
-cargo +nightly -Z unstable-options build --artifact-dir . --release --bins --all-features
+cargo build --release --bins
+
+RUST_LOG=info ./target/release/releaser
+
+cp -v ./shell/*.sh $HOME/.local/bin/
+cp -v ./python/*.py $HOME/.local/bin/

@@ -1,0 +1,9 @@
+[package]
+name = "vpn"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+errors_with_context = { path = "../errors_with_context"}
+process_utils = { path = "../process_utils"}
+tokio = { version = "*", default-features = false, features = ["rt", "macros", "fs"] }

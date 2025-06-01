@@ -1,0 +1,8 @@
+[package]
+name = "process_utils"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+errors_with_context = { path = "../errors_with_context"}
+tokio = { version = "1.45.1", default-features = false, features = ["test-util", "process", "io-util"] }

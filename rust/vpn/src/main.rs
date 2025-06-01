@@ -1,15 +1,13 @@
-use crate::helpers::{run, run_with_exit_status};
+use errors_with_context::{ErrorMessage, WithContext};
+use process_utils::{run, run_with_exit_status};
 use std::env;
-use std::error::Error;
-
-mod helpers;
 
 const TIMEOUT_SECONDS: u64 = 1;
 const VPN_IP: &str = "172.16.0.1";
-const WIREGUARD_SERVICE: &'static str = "wireguard-wg0.service";
+const WIREGUARD_SERVICE: &str = "wireguard-wg0.service";
 
 #[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<(), ErrorMessage> {
     let ping_time = ping().await?;
 
     if let Some(arg) = env::args().nth(1) {
@@ -33,7 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 run("sudo", ["systemctl", "stop", WIREGUARD_SERVICE]).await?;
                 println!(r#"{{"state": "Warning", "text": " "}}"#);
             }
-            unknown_arg => Err(format!("Unknown argument '{}'", unknown_arg))?,
+            unknown_arg => ErrorMessage::err(format!("Unknown argument '{}'", unknown_arg))?,
         }
     } else {
         print_status(ping_time);
@@ -52,15 +50,15 @@ fn print_status(ping_time: Option<String>) {
 
 /// Some: ping success with time
 /// None: ping failed
-async fn ping() -> Result<Option<String>, Box<dyn Error>> {
+async fn ping() -> Result<Option<String>, ErrorMessage> {
     let (status, output) =
         run_with_exit_status("ping", ["-c", "1", "-w", &TIMEOUT_SECONDS.to_string(), VPN_IP])
             .await?;
     if status.success() {
         let (_, time_with_suffix) = output.split_once("time=")
-            .ok_or(format!("Expected output of successful ping command to contain string 'time='. Instead got:\n{}", output))?;
+            .with_dyn_err_context(|| format!("Expected output of successful ping command to contain string 'time='. Instead got:\n{}", output))?;
         let (time, _) = time_with_suffix.split_once(' ')
-            .ok_or(format!("Expected output of successful ping command to contain 'time=<TIME> ms'. Instead got:\n{}", output))?;
+            .with_dyn_err_context(|| format!("Expected output of successful ping command to contain 'time=<TIME> ms'. Instead got:\n{}", output))?;
         Ok(Some(time.to_owned()))
     } else {
         Ok(None)

@@ -1,0 +1,11 @@
+[package]
+name = "multi_monitor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+errors_with_context = { path = "../errors_with_context", features = ["boolean"]}
+process_utils = { path = "../process_utils"}
+tokio = { version = "*", default-features = false, features = ["rt", "macros", "fs"] }
+serde_json = "1.0.140"
+serde = { version = "1.0.219", features = ["derive"] }

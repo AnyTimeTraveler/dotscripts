@@ -1,0 +1,10 @@
+[package]
+name = "releaser"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+errors_with_context = { path = "../errors_with_context", features = ["boolean"]}
+tokio = { version = "*", default-features = false, features = ["rt", "macros", "fs"] }
+log = "0.4.27"
+env_logger = "0.11.8"

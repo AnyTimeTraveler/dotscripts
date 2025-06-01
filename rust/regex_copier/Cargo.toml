@@ -1,0 +1,11 @@
+[package]
+name = "regex_copier"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+errors_with_context = { path = "../errors_with_context", features = ["boolean"]}
+tokio = { version = "*", default-features = false, features = ["rt", "macros", "fs"] }
+clap = { version = "4.5.39" , features = ["derive"]}
+colored = "3.0.0"
+regex = "1.11.1"
