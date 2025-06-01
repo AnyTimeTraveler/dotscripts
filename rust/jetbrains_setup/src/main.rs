@@ -3,7 +3,7 @@ use process_utils::run;
 use std::path::PathBuf;
 use tokio::fs::OpenOptions;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use log::{debug, trace};
+use log::{debug, info, trace};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ErrorMessage> {
@@ -70,11 +70,12 @@ async fn create_config() -> Result<String, ErrorMessage> {
     let rust_root = run("rustc", &["--print", "sysroot"])
         .await
         .with_err_context("Executing 'rustc --print sysroot' failed")?;
+    info!("Found rust at path: {}", &rust_root);
     let rust_root = rust_root.trim();
     Ok(format!(
         r#"<component name="RustProjectSettings">
-    <option name="explicitPathToStdlib" value="{rust_root}" />
-    <option name="toolchainHomeDirectory" value="{rust_root}/lib/rustlib/src/rust/library" />
+    <option name="toolchainHomeDirectory" value="{rust_root}" />
+    <option name="explicitPathToStdlib" value="{rust_root}/lib/rustlib/src/rust/library" />
   </component>"#
     ))
 }
