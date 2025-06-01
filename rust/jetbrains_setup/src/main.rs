@@ -72,10 +72,14 @@ async fn create_config() -> Result<String, ErrorMessage> {
         .with_err_context("Executing 'rustc --print sysroot' failed")?;
     info!("Found rust at path: {}", &rust_root);
     let rust_root = rust_root.trim();
+    let rust_bin = format!("{rust_root}/bin");
+    let rust_lib = format!("{rust_root}/lib/rustlib/src/rust/library");
+    debug!("Rust bin: {}", rust_bin);
+    debug!("Rust lib: {}", rust_lib);
     Ok(format!(
         r#"<component name="RustProjectSettings">
-    <option name="toolchainHomeDirectory" value="{rust_root}" />
-    <option name="explicitPathToStdlib" value="{rust_root}/lib/rustlib/src/rust/library" />
+    <option name="toolchainHomeDirectory" value="{rust_bin}" />
+    <option name="explicitPathToStdlib" value="{rust_lib}" />
   </component>"#
     ))
 }
