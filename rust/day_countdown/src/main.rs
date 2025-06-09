@@ -1,5 +1,4 @@
 use chrono::{Local, NaiveDate};
-use std::env;
 use std::env::home_dir;
 use std::fs::OpenOptions;
 use std::io::Read;
