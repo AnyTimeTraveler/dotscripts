@@ -7,7 +7,6 @@ members = [
     "rust/day_countdown",
     "rust/power_profiles",
     "rust/vpn",
-    "rust/nixos_rebuild",
     "rust/regex_copier",
     "rust/jetbrains_setup",
     "rust/multi_monitor",
