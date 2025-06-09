@@ -1,16 +1,16 @@
 use chrono::{Local, NaiveDate};
 use std::env;
+use std::env::home_dir;
 use std::fs::OpenOptions;
 use std::io::Read;
 use errors_with_context::{ErrorMessage, WithContext};
 
 fn main() -> Result<(), ErrorMessage> {
-    let exe_path = env::current_exe()
-        .with_err_context("Could not get path to current exe")?;
-    let exe_dir_path =
-        exe_path.parent()
-            .with_err_context("Could not get parent dir of this exe")?;
-    let target_date_path = exe_dir_path.join("day_countdown_target_date");
+    let home = home_dir()
+        .with_err_context("Could not get home dir")?;
+    let target_date_path = home
+        .join(".data")
+        .join("day_countdown_target_date");
 
     let mut target_date = String::new();
     OpenOptions::new()

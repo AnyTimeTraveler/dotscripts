@@ -1,14 +1,15 @@
 [workspace]
 resolver = "3"
 members = [
-    "rust/process_utils",
     "rust/change_default_sink",
     "rust/change_default_source",
     "rust/day_countdown",
-    "rust/power_profiles",
-    "rust/vpn",
-    "rust/regex_copier",
     "rust/jetbrains_setup",
     "rust/multi_monitor",
+    "rust/power_profiles",
+    "rust/process_utils",
+    "rust/regex_copier",
     "rust/releaser",
+    "rust/template",
+    "rust/vpn",
 ]
