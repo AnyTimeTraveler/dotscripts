@@ -2,7 +2,6 @@
 resolver = "3"
 members = [
     "rust/process_utils",
-    "rust/errors_with_context",
     "rust/change_default_sink",
     "rust/change_default_source",
     "rust/day_countdown",
