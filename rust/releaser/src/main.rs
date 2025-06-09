@@ -4,10 +4,15 @@ use log::{debug, info};
 use std::env::{current_dir, home_dir};
 use std::fs;
 use std::path::Path;
+use env_logger::{Env, Target};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ErrorMessage> {
-    env_logger::init();
+    env_logger::builder()
+        .parse_env(Env::default().filter_or("RUST_LOG", "info"))
+        .target(Target::Stdout)
+        .format_timestamp_secs()
+        .init();
     let src_path = current_dir() //
         .with_err_context("Could not get current directory")? //
         .join("target/release");
