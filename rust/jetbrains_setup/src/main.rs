@@ -1,13 +1,18 @@
-use errors_with_context::{ErrorMessage, WithContext};
+use errors_with_context::{BooleanErrors, ErrorMessage, WithContext};
 use process_utils::run;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use env_logger::{Env, Target};
 use tokio::fs::OpenOptions;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use log::{debug, info, trace};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ErrorMessage> {
-    env_logger::init();
+        env_logger::builder()
+        .parse_env(Env::default().filter_or("RUST_LOG", "info"))
+        .target(Target::Stdout)
+        .format_timestamp_secs()
+        .init();
     let current_path =
         std::env::current_dir().with_err_context("Current directory somehow not found")?;
     debug!("Current directory: {}", current_path.display());
@@ -63,7 +68,7 @@ async fn replace_config(content: &mut String, start: usize) -> Result<(), ErrorM
     let new_config = create_config().await?;
     trace!("With:\n{}", new_config);
     content.replace_range(range, &new_config);
-    info!("Done!");
+    info!("Updated jetbrains configuration to use the currently enabled rust-toolchain!");
     Ok(())
 }
 
@@ -74,7 +79,9 @@ async fn create_config() -> Result<String, ErrorMessage> {
     let rust_root = rust_root.trim();
     info!("Found rust at path: {}", &rust_root);
     let rust_bin = format!("{rust_root}/bin");
+    Path::new(&rust_bin).exists().error_dyn_if_false(||format!("Rust binaries not found at path: {}", &rust_bin))?;
     let rust_lib = format!("{rust_root}/lib/rustlib/src/rust/library");
+    Path::new(&rust_lib).exists().error_dyn_if_false(||format!("Rust stdlib not found at path: {}", &rust_lib))?;
     debug!("Rust bin: {}", rust_bin);
     debug!("Rust lib: {}", rust_lib);
     Ok(format!(
