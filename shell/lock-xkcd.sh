@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source $HOME/.scripts/lock-common.sh
+source $(which lock-common.sh)
 
 cd ~
 python3 ~/.scripts/xkcd.py

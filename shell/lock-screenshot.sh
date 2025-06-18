@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source $HOME/.scripts/lock-common.sh
+source $(which lock-common.sh)
 
 file="$HOME/tempLockscreen.png"
 

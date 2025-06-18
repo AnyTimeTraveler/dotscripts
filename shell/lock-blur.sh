@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-source $HOME/.scripts/lock-common.sh
+source $(which lock-common.sh)
 
 rawFile="$HOME/tempRawLockscreen.png"
 editedFile="$HOME/tempBlurredLockscreen.png"
 
 $screenshotter $rawFile
-convert $rawFile -resize 10% -filter Box -resize 1000% $editedFile
+magick $rawFile -resize 10% -filter Box -resize 1000% $editedFile
 rm $rawFile
 $lock -i $editedFile --show-failed-attempts
 rm $editedFile
