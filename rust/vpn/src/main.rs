@@ -3,7 +3,7 @@ use process_utils::{run, run_simple, run_with_exit_status};
 use std::env;
 
 const TIMEOUT_SECONDS: u64 = 1;
-const MEGADRIVE_IP: &str = "172.16.0.1";
+const MEGADRIVE_LOCAL_IP: &str = "192.168.1.2";
 const VPN_IP: &str = "172.16.0.1";
 const LOCAL_IP_SUBSTRING: &str = "192.168.1.";
 const WIREGUARD_LOCAL_PROFILE: &str = "wg_local";
@@ -16,20 +16,25 @@ fn service_name(profile_name: &str) -> String {
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), ErrorMessage> {
     let vpn_ping_time = tokio::spawn(ping(VPN_IP));
-    let megadrive_reachable = tokio::spawn(ping(MEGADRIVE_IP));
+    let megadrive_reachable = tokio::spawn(ping(MEGADRIVE_LOCAL_IP));
     let home_ip_range = tokio::spawn(is_in_home_ip_range());
     let service_local = tokio::spawn(is_vpn_interface_active(WIREGUARD_LOCAL_PROFILE));
     let service_global = tokio::spawn(is_vpn_interface_active(WIREGUARD_GLOBAL_PROFILE));
 
-    let vpn_ping_time =
-        dbg!(vpn_ping_time.await.with_err_context("Failed to get ping time for VPN")??);
-    let megadrive_reachable =
-        dbg!(megadrive_reachable.await.with_err_context("Failed to get ping time for megadrive")??).is_some();
-    let home_ip_range = home_ip_range.await.with_err_context("Failed to check for home IP range")??;
-    let service_local = service_local
+    let vpn_ping_time = vpn_ping_time //
+        .await
+        .with_err_context("Failed to get ping time for VPN")??;
+    let megadrive_reachable = megadrive_reachable //
+        .await
+        .with_err_context("Failed to get ping time for megadrive")??
+        .is_some();
+    let home_ip_range = home_ip_range //
+        .await
+        .with_err_context("Failed to check for home IP range")??;
+    let service_local = service_local //
         .await
         .with_err_context("Failed to check if local wireguard service is active")??;
-    let service_global = service_global
+    let service_global = service_global //
         .await
         .with_err_context("Failed to check if global wireguard service is active")??;
 
@@ -53,7 +58,7 @@ async fn main() -> Result<(), ErrorMessage> {
                     restart_wg(use_local_profile).await?;
                 }
             }
-            "start" => {
+            "start" | "restart" => {
                 restart_wg(use_local_profile).await?;
             }
             "stop" => {
@@ -70,7 +75,13 @@ async fn main() -> Result<(), ErrorMessage> {
             unknown_arg => ErrorMessage::err(format!("Unknown argument '{}'", unknown_arg))?,
         }
     } else {
-        print_status(megadrive_reachable, home_ip_range, service_local, service_global, vpn_ping_time);
+        print_status(
+            megadrive_reachable,
+            home_ip_range,
+            service_local,
+            service_global,
+            vpn_ping_time,
+        );
     }
 
     Ok(())
@@ -99,14 +110,15 @@ fn print_status(
     ping_time: Option<String>,
 ) {
     print!(r#"{{"state": ""#);
-    if ping_time.is_some() {
+    if service_local && service_global {
+        print!("Info")
+    } else if ping_time.is_some() {
         print!("Good")
     } else if service_global || service_local {
         print!("Warning")
     } else {
         print!("Critical")
     }
-    // print!(r#"", "text": "C "#);
     print!(r#"", "text": ""#);
     if megadrive_reachable {
         print!(" ")
@@ -120,14 +132,13 @@ fn print_status(
     }
     print!("|");
 
-    // print!("P");
     if service_local && service_global {
         print!("  ")
     } else if service_local {
         print!(" ")
     } else if service_global {
         print!(" ")
-    }else {
+    } else {
         print!(" ")
     }
     print!(" ");
