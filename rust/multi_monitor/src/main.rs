@@ -85,20 +85,26 @@ async fn main() -> Result<(), ErrorMessage> {
     );
     println!("desk_right: {}", desk_right.is_some());
 
-    let dlr_left = monitors.find_monitor(
-        OutputConfig::new() //
-            .make_regex("Dell Inc.") //
-            .name_regex("DP-9"), //
-    );
+    let dlr_left = any_of(vec![
+        monitors.find_monitor(
+            OutputConfig::new()
+                .make_regex("Dell Inc.")
+                .model_regex("DELL P2423DE")
+                .serial_regex("J1VK1L3"),
+        ),
+    ]);
     println!("dlr_left: {}", dlr_left.is_some());
-    let dlr_right = monitors.find_monitor(
-        OutputConfig::new() //
-            .make_regex("Dell Inc.") //
-            .name_regex("DP-7"), //
-    );
+    let dlr_right = any_of(vec![
+        monitors.find_monitor(
+            OutputConfig::new()
+                .make_regex("Dell Inc.")
+                .model_regex("DELL P2423DE")
+                .serial_regex("FLFL1L3"),
+        ),
+    ]);
     println!("dlr_right: {}", dlr_right.is_some());
 
-    println!("Choosing to use the following setup:");
+    print!("Choosing to use the following setup: ");
     // # Define your setups based on which monitors were found
     let mut setup_string;
     if let (Some(builtin), Some(left), Some(center), Some(right)) =
@@ -224,8 +230,14 @@ async fn main() -> Result<(), ErrorMessage> {
             x += output.modes[0].width;
         }
     }
-    apply_setup(&setup_string).await.with_err_context("Error applying new monitor configuration")?;
+    apply_setup(&setup_string)
+        .await
+        .with_err_context("Error applying new monitor configuration")?;
     Ok(())
+}
+
+fn any_of(outputs: Vec<Option<&Output>>) -> Option<&Output> {
+    outputs.into_iter().filter_map(|a| a).next()
 }
 
 struct OutputConfig {
