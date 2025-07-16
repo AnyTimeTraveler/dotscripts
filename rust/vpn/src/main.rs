@@ -144,7 +144,7 @@ fn print_status(
     print!(" ");
 
     if let Some(ping_time) = ping_time {
-        print!("{ping_time} ms");
+        print!("  {ping_time} ms");
     } else {
         print!(" ");
     }
