@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 
+# read -r -d '\n' options <<EOF
+# Nothing
+# Sleep
+# Shutdown
+# Reboot
+# Hibernate
+# Logout
+# EOF
+
 read -r -d '\n' options <<EOF
 Nothing
 Sleep
 Shutdown
 Reboot
-Hibernate
 Logout
 EOF
 
