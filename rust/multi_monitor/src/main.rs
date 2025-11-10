@@ -55,7 +55,7 @@ impl Outputs {
 async fn main() -> Result<(), ErrorMessage> {
     let monitors = Outputs::from_sway().await?;
     // ################################################
-    // #         MONITORS.is_some() && CONFIGURATIONS          #
+    // #         MONITORS and CONFIGURATIONS          #
     // ################################################
 
     // # Define your monitors
@@ -90,7 +90,7 @@ async fn main() -> Result<(), ErrorMessage> {
             OutputConfig::new()
                 .make_regex("Dell Inc.")
                 .model_regex("DELL P2423DE")
-                .serial_regex("J1VK1L3"),
+                .serial_regex("9D4M1L3"),
         ),
     ]);
     println!("dlr_left: {}", dlr_left.is_some());
@@ -99,7 +99,7 @@ async fn main() -> Result<(), ErrorMessage> {
             OutputConfig::new()
                 .make_regex("Dell Inc.")
                 .model_regex("DELL P2423DE")
-                .serial_regex("FLFL1L3"),
+                .serial_regex("5RYK1L3"),
         ),
     ]);
     println!("dlr_right: {}", dlr_right.is_some());
