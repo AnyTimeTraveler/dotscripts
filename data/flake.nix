@@ -11,10 +11,7 @@
       rust-overlay,
     }:
     let
-      supportedSystems = [
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
+      supportedSystems = ["x86_64-linux"];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
