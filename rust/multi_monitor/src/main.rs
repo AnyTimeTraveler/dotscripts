@@ -104,6 +104,7 @@ async fn main() -> Result<(), ErrorMessage> {
     ]);
     println!("dlr_right: {}", dlr_right.is_some());
 
+    let bg_path = "/home/nora/.config/sway";
     print!("Choosing to use the following setup: ");
     // # Define your setups based on which monitors were found
     let mut setup_string;
@@ -125,6 +126,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_middle.jpg fit
     }}
     output "{right_name}" {{
         mode  1920x1080@60.0Hz
@@ -134,6 +136,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_right.jpg fit
     }}
     output "{left_name}" {{
         mode  1920x1200@59.95Hz
@@ -143,6 +146,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_left.jpg fit
     }}
     output "{builtin_name}" disable
     "#
@@ -162,6 +166,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_right.jpg fit
     }}
     output "{right_name}" {{
         mode  2560x1440@59.951Hz
@@ -171,6 +176,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_right.jpg fit
     }}
     output "{left_name}" {{
         mode  2560x1440@59.951Hz
@@ -180,6 +186,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_right_flipped.jpg fit
     }}
     "#
         );
@@ -197,6 +204,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_right.jpg fit
     }}
     output "{center_name}" {{
         mode  1920x1080@144.001Hz
@@ -206,6 +214,7 @@ async fn main() -> Result<(), ErrorMessage> {
         scale_filter nearest
         adaptive_sync off
         dpms on
+        bg {bg_path}/trans_right.jpg fit
     }}
     "#
         );
